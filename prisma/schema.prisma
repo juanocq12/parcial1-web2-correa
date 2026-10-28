@@ -1,0 +1,48 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "ts"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum EstadoPrestamo {
+  ACTIVO
+  DEVUELTO
+}
+
+model Socio {
+  id        Int        @id @default(autoincrement())
+  nombre    String
+  email     String     @unique
+  creadoEn  DateTime   @default(now())
+  prestamos Prestamo[]
+}
+
+model Libro {
+  id                    Int        @id @default(autoincrement())
+  titulo                String
+  autor                 String
+  isbn                  String     @unique
+  ejemplaresTotales     Int
+  ejemplaresDisponibles Int
+  prestamos             Prestamo[]
+}
+
+model Prestamo {
+  id              Int            @id @default(autoincrement())
+  socioId         Int
+  libroId         Int
+  estado          EstadoPrestamo @default(ACTIVO)
+  fechaPrestamo   DateTime       @default(now())
+  fechaLimite     DateTime
+  fechaDevolucion DateTime?
+  socio           Socio          @relation(fields: [socioId], references: [id])
+  libro           Libro          @relation(fields: [libroId], references: [id])
+
+  @@index([socioId, estado])
+  @@index([socioId, fechaPrestamo])
+}
